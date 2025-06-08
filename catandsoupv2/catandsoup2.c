@@ -59,6 +59,9 @@ int main(void) {
         if (turn > 1) {
             handle_mood_change();
         }
+        // 이동
+        handle_movement();
+
         // 방그리기
         draw_room();
 
@@ -143,6 +146,63 @@ void draw_room() {
     for (int i = 0; i < ROOM_WIDTH; i++) printf("#");
     printf("\n\n");
     Sleep(500);
+}
+
+// 이동
+void handle_movement() {
+    prev_pos = cat_pos;
+    printf("--- %s의 이동 ---\n", CAT_NAME);
+
+    switch (mood) {
+    case 0: // 집으로
+        if (cat_pos > HME_POS) {
+            cat_pos--;
+            printf("기분이 매우 나쁜 %s은(는) 집으로 향합니다.\n", CAT_NAME);
+        }
+        else {
+            printf("%s은(는) 집에 머물러 있습니다.\n", CAT_NAME);
+        }
+        break;
+    case 1: // 놀이기구로
+        if (!has_scratcher && !has_cat_tower) {
+            printf("놀거리가 없어서 기분이 매우 나빠집니다.\n");
+            if (mood > 0) mood--;
+        }
+        else {
+            int target_pos = -1;
+            // 두개 다 있으면 더 가까운 곳으로
+            if (has_scratcher && has_cat_tower) {
+                target_pos = abs(cat_pos - scratcher_pos) <= abs(cat_pos - cat_tower_pos) ? scratcher_pos : cat_tower_pos;
+            }
+            else if (has_scratcher) {
+                target_pos = scratcher_pos;
+            }
+            else { // 캣타워만 있을 때
+                target_pos = cat_tower_pos;
+            }
+
+            const char* toy_name = (target_pos == scratcher_pos) ? "스크래처" : "캣타워";
+            printf("%s은(는) 심심해서 %s 쪽으로 이동합니다.\n", CAT_NAME, toy_name);
+
+            if (cat_pos < target_pos) cat_pos++;
+            else if (cat_pos > target_pos) cat_pos--;
+        }
+        break;
+    case 2: // 제자리
+        printf("%s은(는) 기분 좋게 식빵을 굽고 있습니다.\n", CAT_NAME);
+        break;
+    case 3: // 냄비로
+        if (cat_pos < BWL_POS) {
+            cat_pos++;
+            printf("%s은(는) 골골송을 부르며 수프를 만들러 갑니다.\n", CAT_NAME);
+        }
+        else {
+            printf("%s은(는) 냄비 앞에 머물러 있습니다.\n", CAT_NAME);
+        }
+        break;
+    }
+    printf("\n");
+    Sleep(1500);
 }
 
 
