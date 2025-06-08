@@ -52,7 +52,7 @@ int main(void) {
         clear_screen();
         printf("==================== Turn %d ====================\n", turn);
 
-        // 1. 상태 출력
+        // 상태 출력
         print_status();
 
         // 기분 변화 (첫 턴 제외)
@@ -61,6 +61,9 @@ int main(void) {
         }
         // 이동
         handle_movement();
+
+		// 행동
+        handle_action();
 
         // 방그리기
         draw_room();
@@ -205,6 +208,56 @@ void handle_movement() {
     Sleep(1500);
 }
 
+// 행동
+void handle_action() {
+    if (prev_pos == cat_pos) {
+        if (cat_pos == HME_POS) {
+            printf("%s은(는) 집에서 한 턴을 쉬어 기분이 좋아집니다.\n", CAT_NAME);
+            if (mood < 3) mood++;
+        }
+        return;
+    }
+
+    printf("--- %s의 행동 ---\n", CAT_NAME);
+    bool action_taken = false;
+    if (cat_pos == BWL_POS) {
+        int soup_type = rand() % 3;
+        const char* soup_name;
+        switch (soup_type) {
+        case 0: soup_name = "감자"; break;
+        case 1: soup_name = "양송이"; break;
+        default: soup_name = "브로콜리"; break;
+        }
+        printf("%s가 %s 수프를 만들었습니다!\n", CAT_NAME, soup_name);
+        soup_c++;
+        action_taken = true;
+    }
+    else if (has_scratcher && cat_pos == scratcher_pos) {
+        printf("%s은(는) 스크래처를 긁고 놀았습니다.\n", CAT_NAME);
+        if (mood < 3) {
+            printf("기분이 조금 좋아졌습니다: %d -> %d\n", mood, mood + 1);
+            mood++;
+        }
+        else {
+            printf("기분이 최고입니다!\n");
+        }
+        action_taken = true;
+    }
+    else if (has_cat_tower && cat_pos == cat_tower_pos) {
+        printf("%s은(는) 캣타워를 뛰어다닙니다.\n", CAT_NAME);
+        int prev_mood = mood;
+        mood += 2;
+        if (mood > 3) mood = 3;
+        printf("기분이 제법 좋아졌습니다: %d -> %d\n", prev_mood, mood);
+        action_taken = true;
+    }
+
+    if (!action_taken) {
+        printf("%s은(는) 특별한 행동을 하지 않았습니다.\n", CAT_NAME);
+    }
+    printf("\n");
+    Sleep(1500);
+}
 
 // 화면 지우기
 void clear_screen() {
