@@ -68,6 +68,8 @@ int main(void) {
         // 방그리기
         draw_room();
 
+		// 상호작용
+        handle_interaction();
     }
 
 	return 0;
@@ -258,6 +260,83 @@ void handle_action() {
     printf("\n");
     Sleep(1500);
 }
+
+// 상호 작용
+void handle_interaction() {
+    int choice = -1;
+    int max_choice = 1;
+    printf("--- 상호작용 ---\n");
+    printf("어떤 상호작용을 하시겠습니까?\n");
+    printf("0. 아무것도 하지 않음\n");
+    printf("1. 긁어 주기\n");
+
+    int toy_mouse_num = -1, laser_pointer_num = -1;
+    if (has_toy_mouse) {
+        max_choice++;
+        toy_mouse_num = max_choice;
+        printf("%d. 장난감 쥐로 놀아 주기\n", toy_mouse_num);
+    }
+    if (has_laser_pointer) {
+        max_choice++;
+        laser_pointer_num = max_choice;
+        printf("%d. 레이저 포인터로 놀아 주기\n", laser_pointer_num);
+    }
+
+    while (1) {
+        printf(">> ");
+        scanf_s("%d", &choice);
+        if (choice >= 0 && choice <= max_choice) {
+            break;
+        }
+        printf("잘못된 입력입니다. 다시 입력해주세요.\n");
+    }
+
+    int dice = rand() % 6 + 1;
+    printf("주사위를 굴립니다. 또르륵... %d이(가) 나왔습니다!\n", dice);
+
+    if (choice == 0) {
+        printf("아무것도 하지 않습니다.\n");
+        printf("%s의 기분이 나빠졌습니다: %d -> %d\n", CAT_NAME, mood, mood > 0 ? mood - 1 : 0);
+        if (mood > 0) mood--;
+        if (dice <= 5) {
+            printf("집사와의 관계가 나빠집니다.\n");
+            if (intimacy > 0) intimacy--;
+        }
+    }
+    else if (choice == 1) {
+        printf("%s의 턱을 긁어주었습니다.\n", CAT_NAME);
+        printf("%s의 기분은 그대로입니다: %d\n", CAT_NAME, mood);
+        if (dice >= 5) {
+            printf("집사와의 관계가 좋아집니다.\n");
+            if (intimacy < 4) intimacy++;
+        }
+    }
+    else if (has_toy_mouse && choice == toy_mouse_num) {
+        printf("장난감 쥐로 %s와 놀아주었습니다.\n", CAT_NAME);
+        int prev_mood = mood;
+        if (mood < 3) mood++;
+        printf("%s의 기분이 조금 좋아졌습니다: %d -> %d\n", CAT_NAME, prev_mood, mood);
+        if (dice >= 4) {
+            printf("집사와의 관계가 좋아집니다.\n");
+            if (intimacy < 4) intimacy++;
+        }
+    }
+    else if (has_laser_pointer && choice == laser_pointer_num) {
+        printf("레이저 포인터로 %s와 신나게 놀아주었습니다.\n", CAT_NAME);
+        int prev_mood = mood;
+        mood += 2;
+        if (mood > 3) mood = 3;
+        printf("%s의 기분이 꽤 좋아졌습니다: %d -> %d\n", CAT_NAME, prev_mood, mood);
+        if (dice >= 2) {
+            printf("집사와의 관계가 좋아집니다.\n");
+            if (intimacy < 4) intimacy++;
+        }
+    }
+
+    printf("\n");
+    Sleep(2000);
+}
+
 
 // 화면 지우기
 void clear_screen() {
