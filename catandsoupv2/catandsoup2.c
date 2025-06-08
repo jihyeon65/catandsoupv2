@@ -18,6 +18,17 @@ int soup_c = 0;     // 수프 개수
 int cat_pos = HME_POS; // 고양이 위치
 int prev_pos = HME_POS; // 고양이 이전 위치
 
+// 놀이기구 및 장난감
+bool has_scratcher = false;
+bool has_cat_tower = false;
+bool has_toy_mouse = false;
+bool has_laser_pointer = false;
+
+// 놀이기구 위치
+int scratcher_pos = -1;
+int cat_tower_pos = -1;
+
+
 int main(void) {
     srand((unsigned int)time(NULL));
 
@@ -36,12 +47,20 @@ int main(void) {
 
     Sleep(3000);
 
+    // 게임 턴
     while (1) {
         clear_screen();
         printf("==================== Turn %d ====================\n", turn);
 
         // 1. 상태 출력
         print_status();
+
+        // 기분 변화 (첫 턴 제외)
+        if (turn > 1) {
+            handle_mood_change();
+        }
+        // 방그리기
+        draw_room();
 
     }
 
@@ -71,6 +90,61 @@ void print_status() {
     printf("==================================================\n\n");
     Sleep(1000);
 }
+
+// 기분 변화
+void handle_mood_change() {
+    printf("--- 기분 변화 ---\n");
+    int dice = rand() % 6 + 1;
+    printf("주사위를 굴립니다. 또르륵... %d이(가) 나왔습니다.\n", dice);
+
+    if (dice <= 6 - intimacy) {
+        printf("아무 이유 없이 기분이 나빠집니다. 고양이니까?\n");
+        printf("%s의 기분이 나빠집니다: %d -> %d\n", CAT_NAME, mood, mood > 0 ? mood - 1 : 0);
+        if (mood > 0) mood--;
+    }
+    else {
+        printf("기분은 그대로입니다.\n");
+    }
+    printf("\n");
+    Sleep(1500);
+}
+
+// 방 그리기
+void draw_room() {
+    char furniture_line[ROOM_WIDTH + 1];
+    char cat_line[ROOM_WIDTH + 1];
+
+    for (int i = 0; i < ROOM_WIDTH; i++) {
+        furniture_line[i] = ' ';
+        cat_line[i] = ' ';
+    }
+    furniture_line[ROOM_WIDTH] = '\0';
+    cat_line[ROOM_WIDTH] = '\0';
+
+    furniture_line[0] = '#';
+    furniture_line[ROOM_WIDTH - 1] = '#';
+    furniture_line[HME_POS] = 'H';
+    furniture_line[BWL_POS] = 'B';
+    if (has_scratcher) furniture_line[scratcher_pos] = 'S';
+    if (has_cat_tower) furniture_line[cat_tower_pos] = 'T';
+
+    cat_line[0] = '#';
+    cat_line[ROOM_WIDTH - 1] = '#';
+    if (cat_pos != prev_pos) {
+        cat_line[prev_pos] = '.';
+    }
+    cat_line[cat_pos] = 'C';
+
+    printf("\n");
+    for (int i = 0; i < ROOM_WIDTH; i++) printf("#");
+    printf("\n");
+    printf("%s\n", furniture_line);
+    printf("%s\n", cat_line);
+    for (int i = 0; i < ROOM_WIDTH; i++) printf("#");
+    printf("\n\n");
+    Sleep(500);
+}
+
 
 // 화면 지우기
 void clear_screen() {
