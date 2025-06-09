@@ -337,6 +337,25 @@ void handle_interaction() {
     Sleep(2000);
 }
 
+// CP 생산
+void produce_cp() {
+    int cp_gain = (mood > 1 ? mood - 1 : 0) + intimacy;
+
+    printf("%s의 기분(0~3): %d\n", CAT_NAME, mood);
+    printf("집사와의 친밀도(0~4): %d\n", intimacy);
+
+    if (cp_gain > 0) {
+        printf("%s의 기분과 친밀도에 따라서 CP가 %d 포인트 생산되었습니다.\n", CAT_NAME, cp_gain);
+        cp += cp_gain;
+    }
+    else {
+        printf("CP가 생산되지 않았습니다.\n");
+    }
+    printf("보유 CP: %d 포인트\n\n", cp);
+    Sleep(2000);
+}
+
+
 
 // 화면 지우기
 void clear_screen() {
