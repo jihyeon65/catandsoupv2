@@ -70,6 +70,12 @@ int main(void) {
 
 		// 상호작용
         handle_interaction();
+
+		// CP 생산
+        produce_cp();
+
+        // 9. 상점
+        enter_shop();
     }
 
 	return 0;
@@ -101,7 +107,7 @@ void print_status() {
 
 // 기분 변화
 void handle_mood_change() {
-    printf("--- 기분 변화 ---\n");
+
     int dice = rand() % 6 + 1;
     printf("주사위를 굴립니다. 또르륵... %d이(가) 나왔습니다.\n", dice);
 
@@ -156,7 +162,6 @@ void draw_room() {
 // 이동
 void handle_movement() {
     prev_pos = cat_pos;
-    printf("--- %s의 이동 ---\n", CAT_NAME);
 
     switch (mood) {
     case 0: // 집으로
@@ -220,7 +225,6 @@ void handle_action() {
         return;
     }
 
-    printf("--- %s의 행동 ---\n", CAT_NAME);
     bool action_taken = false;
     if (cat_pos == BWL_POS) {
         int soup_type = rand() % 3;
@@ -265,7 +269,7 @@ void handle_action() {
 void handle_interaction() {
     int choice = -1;
     int max_choice = 1;
-    printf("--- 상호작용 ---\n");
+
     printf("어떤 상호작용을 하시겠습니까?\n");
     printf("0. 아무것도 하지 않음\n");
     printf("1. 긁어 주기\n");
@@ -354,6 +358,91 @@ void produce_cp() {
     printf("보유 CP: %d 포인트\n\n", cp);
     Sleep(2000);
 }
+
+
+
+// 상점
+void enter_shop() {
+    int choice = -1;
+    printf("--- 상점 ---\n");
+    printf("상점에 방문하시겠습니까? (1. 예, 0. 아니오)\n>> ");
+    scanf_s("%d", &choice);
+
+    if (choice != 1) {
+        printf("상점을 나옵니다.\n");
+        return;
+    }
+
+    while (1) {
+        clear_screen();
+        printf("--- 상점 ---\n");
+        printf("보유 CP: %d\n\n", cp);
+        printf("어떤 물건을 구매하시겠습니까?\n");
+        printf("0. 아무것도 사지 않는다.\n");
+        printf("1. 장난감 쥐: 1 CP %s\n", has_toy_mouse ? "(품절)" : "");
+        printf("2. 레이저 포인터: 2 CP %s\n", has_laser_pointer ? "(품절)" : "");
+        printf("3. 스크래처: 4 CP %s\n", has_scratcher ? "(품절)" : "");
+        printf("4. 캣 타워: 6 CP %s\n", has_cat_tower ? "(품절)" : "");
+
+        printf(">> ");
+        scanf_s("%d", &choice);
+
+        if (choice == 0) {
+            break;
+        }
+
+        switch (choice) {
+        case 1:
+            if (has_toy_mouse) printf("장난감 쥐를 이미 구매했습니다.\n");
+            else if (cp >= 1) {
+                cp -= 1; has_toy_mouse = true;
+                printf("장난감 쥐를 구매했습니다. 보유 CP %d 포인트\n", cp);
+            }
+            else printf("CP가 부족합니다.\n");
+            break;
+        case 2:
+            if (has_laser_pointer) printf("레이저 포인터를 이미 구매했습니다.\n");
+            else if (cp >= 2) {
+                cp -= 2; has_laser_pointer = true;
+                printf("레이저 포인터를 구매했습니다. 보유 CP %d 포인트\n", cp);
+            }
+            else printf("CP가 부족합니다.\n");
+            break;
+        case 3:
+            if (has_scratcher) printf("스크래처를 이미 구매했습니다.\n");
+            else if (cp >= 4) {
+                cp -= 4; has_scratcher = true;
+                scratcher_pos = get_empty_furniture_pos();
+                printf("스크래처를 구매했습니다. 방의 %d 위치에 배치됩니다. 보유 CP %d 포인트\n", scratcher_pos, cp);
+            }
+            else printf("CP가 부족합니다.\n");
+            break;
+        case 4:
+            if (has_cat_tower) printf("캣 타워를 이미 구매했습니다.\n");
+            else if (cp >= 6) {
+                cp -= 6; has_cat_tower = true;
+                cat_tower_pos = get_empty_furniture_pos();
+                printf("캣 타워를 구매했습니다. 방의 %d 위치에 배치됩니다. 보유 CP %d 포인트\n", cat_tower_pos, cp);
+            }
+            else printf("CP가 부족합니다.\n");
+            break;
+        default:
+            printf("범위를 벗어난 값입니다. 다시 입력해주세요.\n");
+        }
+        Sleep(2000);
+    }
+}
+// 놀이기구 구매 시 무작위 위치 설정
+int get_empty_furniture_pos() {
+    int pos;
+    while (1) {
+        pos = rand() % (BWL_POS - HME_POS - 2) + (HME_POS + 2);
+        if (pos != scratcher_pos && pos != cat_tower_pos) {
+            return pos;
+        }
+    }
+}
+
 
 
 
