@@ -67,7 +67,7 @@ int main(void) {
         // 상태 출력
         print_status();
 
-    // 2. 돌발 퀘스트 (3번째 턴마다)
+     // 돌발 퀘스트 (3번째 턴마다)
         if (turn > 1 && turn % 3 == 0) {
             run_quest();
         }
