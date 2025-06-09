@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <time.h>
 #include <stdbool.h>
-#include <conio.h>
+#include <conio.h> // 돌발 퀘스트
 
 #define ROOM_WIDTH 12
 #define HME_POS 1
@@ -50,10 +50,14 @@ int main(void) {
     // 게임 턴
     while (1) {
         clear_screen();
-        printf("==================== Turn %d ====================\n", turn);
 
         // 상태 출력
         print_status();
+
+        // 2. 돌발 퀘스트 (3번째 턴마다)
+        if (turn == 3) {
+            run_quest();
+        }
 
         // 기분 변화 (첫 턴 제외)
         if (turn > 1) {
@@ -76,6 +80,9 @@ int main(void) {
 
         // 9. 상점
         enter_shop();
+
+        turn++;
+        Sleep(3000);
     }
 
 	return 0;
@@ -443,7 +450,45 @@ int get_empty_furniture_pos() {
     }
 }
 
+// 돌발 퀘스트
+void run_quest() {
+    clear_screen();
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!           돌발 퀘스트            !!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
+    printf("%s가 갑자기 당신의 키보드 위로 올라왔습니다!\n", CAT_NAME);
+    printf("제한 시간 20초 안에 '내려와'를 정확히 입력해서 %s를 내려보내세요!\n", CAT_NAME);
+    printf("실패 시 기분이 1 하락합니다.\n\n");
+    printf("준비... 시작!\n");
 
+    time_t start_time = time(NULL);
+    char input[20] = "";
+
+    while ((time(NULL) - start_time) < 20) {
+        if (_kbhit()) {
+            scanf_s("%19s", input, (unsigned)_countof(input));
+            break;
+        }
+    }
+
+    while (getchar() != '\n');
+
+    if (strcmp(input, "내려와") == 0) {
+        printf("\n퀘스트 성공! %s가 얌전히 내려왔습니다.\n", CAT_NAME);
+        printf("보상으로 친밀도가 1 증가합니다!\n");
+        if (intimacy < 19) intimacy++;
+    }
+    else {
+        printf("\n퀘스트 실패... %s가 키보드를 마구 밟고 도망갑니다.\n", CAT_NAME);
+        if (strlen(input) == 0) printf("(시간 초과!)\n"); // 시간 초과 메시지 추가
+        printf("기분이 1 하락합니다.\n");
+        if (mood > 0) mood--;
+    }
+    printf("\n... 퀘스트를 종료합니다 ...\n");
+    Sleep(4000);
+    clear_screen();
+    print_status();
+}
 
 
 // 화면 지우기
