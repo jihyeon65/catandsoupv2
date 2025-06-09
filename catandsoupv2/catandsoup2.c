@@ -28,6 +28,19 @@ bool has_laser_pointer = false;
 int scratcher_pos = -1;
 int cat_tower_pos = -1;
 
+// 함수 선언
+void clear_screen();
+void print_status();
+void handle_mood_change();
+void draw_room();
+void handle_movement();
+void handle_action();
+void handle_interaction();
+void produce_cp();
+void enter_shop();
+int get_empty_furniture_pos();
+void run_quest();
+
 
 int main(void) {
     srand((unsigned int)time(NULL));
@@ -54,8 +67,8 @@ int main(void) {
         // 상태 출력
         print_status();
 
-        // 2. 돌발 퀘스트 (3번째 턴마다)
-        if (turn == 3) {
+    // 2. 돌발 퀘스트 (3번째 턴마다)
+        if (turn > 1 && turn % 3 == 0) {
             run_quest();
         }
 
@@ -86,6 +99,11 @@ int main(void) {
     }
 
 	return 0;
+}
+
+// 화면 지우기
+void clear_screen() {
+    system("cls");
 }
 
 // 상태 출력
@@ -295,11 +313,14 @@ void handle_interaction() {
 
     while (1) {
         printf(">> ");
-        scanf_s("%d", &choice);
-        if (choice >= 0 && choice <= max_choice) {
+        if (scanf_s("%d", &choice) == 1 && choice >= 0 && choice <= max_choice) {
+            while (getchar() != '\n');
             break;
         }
-        printf("잘못된 입력입니다. 다시 입력해주세요.\n");
+        else {
+            printf("잘못된 입력입니다. 다시 입력해주세요.\n");
+            while (getchar() != '\n');
+        }
     }
 
     int dice = rand() % 6 + 1;
@@ -373,7 +394,12 @@ void enter_shop() {
     int choice = -1;
     printf("--- 상점 ---\n");
     printf("상점에 방문하시겠습니까? (1. 예, 0. 아니오)\n>> ");
-    scanf_s("%d", &choice);
+
+    while (scanf_s("%d", &choice) != 1 || (choice != 0 && choice != 1)) {
+        printf("잘못된 입력입니다. 1 또는 0을 입력해주세요.\n>> ");
+        while (getchar() != '\n');
+    }
+    while (getchar() != '\n');
 
     if (choice != 1) {
         printf("상점을 나옵니다.\n");
@@ -392,7 +418,11 @@ void enter_shop() {
         printf("4. 캣 타워: 6 CP %s\n", has_cat_tower ? "(품절)" : "");
 
         printf(">> ");
-        scanf_s("%d", &choice);
+
+        if (scanf_s("%d", &choice) != 1) {
+            choice = -1; // 잘못된 입력일 경우 default로 가도록
+        }
+        while (getchar() != '\n');
 
         if (choice == 0) {
             break;
@@ -450,7 +480,6 @@ int get_empty_furniture_pos() {
     }
 }
 
-// 돌발 퀘스트
 void run_quest() {
     clear_screen();
     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -459,39 +488,47 @@ void run_quest() {
     printf("%s가 갑자기 당신의 키보드 위로 올라왔습니다!\n", CAT_NAME);
     printf("제한 시간 20초 안에 '내려와'를 정확히 입력해서 %s를 내려보내세요!\n", CAT_NAME);
     printf("실패 시 기분이 1 하락합니다.\n\n");
+
+    printf("준비하세요...\n");
+    Sleep(1000);
+    while (_kbhit()) {
+        _getch();
+    }
+
     printf("준비... 시작!\n");
 
     time_t start_time = time(NULL);
-    char input[20] = "";
+    char input[100] = "";
+    int success = 0;
 
     while ((time(NULL) - start_time) < 20) {
         if (_kbhit()) {
-            scanf_s("%19s", input, (unsigned)_countof(input));
+            fgets(input, sizeof(input), stdin);
+
+            // 개행 문자 제거
+            size_t len = strlen(input);
+            if (len > 0 && input[len - 1] == '\n') {
+                input[len - 1] = '\0';
+            }
+
+            success = 1;
             break;
         }
     }
 
-    while (getchar() != '\n');
-
-    if (strcmp(input, "내려와") == 0) {
+    if (success && strcmp(input, "내려와") == 0) {
         printf("\n퀘스트 성공! %s가 얌전히 내려왔습니다.\n", CAT_NAME);
         printf("보상으로 친밀도가 1 증가합니다!\n");
-        if (intimacy < 19) intimacy++;
+        if (intimacy < 4) intimacy++;
     }
     else {
         printf("\n퀘스트 실패... %s가 키보드를 마구 밟고 도망갑니다.\n", CAT_NAME);
-        if (strlen(input) == 0) printf("(시간 초과!)\n"); // 시간 초과 메시지 추가
+        if (!success) printf("(시간 초과!)\n");
         printf("기분이 1 하락합니다.\n");
         if (mood > 0) mood--;
     }
+
     printf("\n... 퀘스트를 종료합니다 ...\n");
     Sleep(4000);
     clear_screen();
-    print_status();
-}
-
-
-// 화면 지우기
-void clear_screen() {
-    system("cls");
 }
